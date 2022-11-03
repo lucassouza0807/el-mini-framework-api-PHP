@@ -91,7 +91,6 @@ class RouteServiceProvider
                 }
             }
         }
-        //print_r($param[1]);
         if (!$callback) {
             header("HTTP/1.0 404 Not Found");
             call_user_func($this->notFoundHandler);

@@ -16,7 +16,11 @@ $app->get("/rastreio", function () {
 
 });
 
-$app->get("/pedidos/:pedido_id" , function () {
+$app->get("/", function() {
+    //echo "Lucas";
+});
+
+$app->get("/pedidos" , function () {
     $_SESSION['user_session'] = "lucas";
     echo $_SESSION['user_session'];
     //

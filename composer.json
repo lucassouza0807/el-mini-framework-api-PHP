@@ -1,6 +1,7 @@
 {
     "require": {
-        "composer/composer": "^2.3"
+        "composer/composer": "^2.3",
+        "twig/twig": "^3.4"
     },
     "autoload": {
         "psr-4": {
