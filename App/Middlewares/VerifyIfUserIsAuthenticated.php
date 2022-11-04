@@ -13,7 +13,7 @@ class VerifyIfUserIsAuthenticated
         $logged = true;
 
         if ($logged == false) {
-            header("Location: http://localhost:8001/");
+            header("Location: http://localhost:8000/");
             die();
         }
 

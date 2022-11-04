@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Providers\MiddlewareProvider;
+use App\Interfaces\MiddlewareProviderInterface;
 
 class RouteServiceProvider
 {
@@ -17,7 +17,7 @@ class RouteServiceProvider
     private const DELETE = "DELETE";
     private const PATCH = "PATCH";
 
-    public function __construct(MiddlewareProvider $middleware)
+    public function __construct(MiddlewareProviderInterface $middleware)
     {
         $this->middleware = $middleware;
     }

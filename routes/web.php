@@ -11,16 +11,17 @@ use \App\Helpers\View;
 
 $app = new RouteServiceProvider(new MiddlewareProvider);
 
+$app->get("/vagas", [UserController::class, "teste"]);
+
 $app->get("/rastreio", function () {
     View::render("rastreio");
-
 });
 
-$app->get("/", function() {
-    //echo "Lucas";
+$app->get("/", function () {
+    View::render("home");
 });
 
-$app->get("/pedidos" , function () {
+$app->get("/pedidos", function () {
     $_SESSION['user_session'] = "lucas";
     echo $_SESSION['user_session'];
     //
@@ -30,7 +31,7 @@ $app->get("/pedidos-2", function () {
     echo "44";
 });
 
-$app->get("/user/:user_id", [UserController::class, "teste"], ["middleware" => "VerifyIfUserIsAuthenticated"]);
+$app->get("/user", [UserController::class, "teste"], ["middleware" => "VerifyIfUserIsAuthenticated"]);
 
 $app->addNotFooundHandler(function () {
     View::render("404");

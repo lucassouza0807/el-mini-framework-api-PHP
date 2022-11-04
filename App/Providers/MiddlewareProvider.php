@@ -3,8 +3,9 @@
 namespace App\Providers;
 
 use Error;
+use App\Interfaces\MiddlewareProviderInterface;
 
-class middlewareProvider
+class middlewareProvider implements MiddlewareProviderInterface
 {
     /*
       Aqui são registradas todas as middlewares

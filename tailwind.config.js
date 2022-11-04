@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./Views/home.html",
+    "./Views/home.html.twig",
     "./Views/*",
     "./Views/rastreio.php"
   ],

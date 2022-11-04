@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
-class UserController
+use App\Controllers\Controller;
+
+class UserController extends Controller
 {
     public function teste()
     {
-        echo "teste";
+        echo $this->template->render("home.html.twig", ["nome" => "Pessoa Linda d+", "idade" => "40 anos"]);
     }
 }

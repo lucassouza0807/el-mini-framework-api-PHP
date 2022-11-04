@@ -8,8 +8,8 @@ class View
 {
     public static function render($view)
     {
-        if (file_exists("./Views/" . $view . ".php")) {
-            require_once("./Views/" . $view . ".php");
+        if (file_exists("../Views/" . $view . ".html.twig")) {
+            require_once("../Views/" . $view . ".html.twig");
         } else {
             throw new Error("A view $view Não existe ");
         }
