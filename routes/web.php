@@ -8,33 +8,45 @@ use \App\Providers\RouteServiceProvider;
 use \App\Controllers\UserController;
 use \App\Providers\middlewareProvider;
 use \App\Helpers\View;
+use \App\Providers\Request;
+use \App\Providers\Response;
 
 $app = new RouteServiceProvider(new MiddlewareProvider);
+$view = new View();
 
-$app->get("/vagas", [UserController::class, "teste"]);
-
-$app->get("/rastreio", function () {
-    View::render("rastreio");
+$app->get("/", function () use ($view) {
+    $view->render("home");
 });
 
-$app->get("/", function () {
-    View::render("home");
+$app->post("/api/user", function () use ($view) {
+    Response::json(["message" => "Not found"], 404);
 });
 
-$app->get("/pedidos", function () {
-    $_SESSION['user_session'] = "lucas";
-    echo $_SESSION['user_session'];
-    //
-}, ["middleware" => "VerifyIfUserIsAuthenticated"]);
+$app->post("/user/:id", [UserController::class, "fix"]);
 
-$app->get("/pedidos-2", function () {
-    echo "44";
+$app->post("/teste/:teste", function($teste) {
+    Response::json([
+        "field" => $teste,
+        "query_string" => Request::get("teste"),
+        "pessoa" => Request::get("pessoa")
+    ]);
 });
 
-$app->get("/user", [UserController::class, "teste"], ["middleware" => "VerifyIfUserIsAuthenticated"]);
+$app->get("/cadastro", function() use($view) {
+    $view->render("cadastro");
+});
 
-$app->addNotFooundHandler(function () {
-    View::render("404");
+
+$app->post("/cadastrex", function () use($view) {
+    $view->render("teste", [
+        "input" => Request::post("nome")
+    ]);
+});
+
+$app->addNotFooundHandler(function () use ($view) {
+    $view->render("404", [
+        "erro" => "Erro fatal"
+    ]);
 });
 
 

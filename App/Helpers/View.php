@@ -6,12 +6,24 @@ use Error;
 
 class View
 {
-    public static function render($view)
+    public $template;
+
+    public function __construct()
     {
-        if (file_exists("../Views/" . $view . ".html.twig")) {
-            require_once("../Views/" . $view . ".html.twig");
-        } else {
-            throw new Error("A view $view Não existe ");
+        $loader = new \Twig\Loader\FilesystemLoader("../views/");
+
+        $this->template = new \Twig\Environment($loader);
+
+    }
+    public function render(string $view, array $data = [])
+    {
+        try {
+            echo $this->template->render($view . ".html.twig", $data);
+
+        } catch (\Exception $e) {
+            echo $this->template->render("error-page.html.twig", [
+                "message" => $e->getMessage()
+            ]);
         }
     }
 }
