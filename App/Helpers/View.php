@@ -2,9 +2,7 @@
 
 namespace App\Helpers;
 
-use Error;
-
-class View
+class View 
 {
     public $template;
 

@@ -11,43 +11,20 @@ use \App\Helpers\View;
 use \App\Providers\Request;
 use \App\Providers\Response;
 
+
 $app = new RouteServiceProvider(new MiddlewareProvider);
 $view = new View();
 
-$app->get("/", function () use ($view) {
-    $view->render("home");
-});
-
-$app->post("/api/user", function () use ($view) {
-    Response::json(["message" => "Not found"], 404);
-});
-
-$app->post("/user/:id", [UserController::class, "fix"]);
-
-$app->post("/teste/:teste", function($teste) {
-    Response::json([
-        "field" => $teste,
-        "query_string" => Request::get("teste"),
-        "pessoa" => Request::get("pessoa")
-    ]);
-});
-
-$app->get("/cadastro", function() use($view) {
-    $view->render("cadastro");
-});
+$app->get("/", function() {
+    echo "Teste";
+}, ["middleware" => "auth"]);
 
 
-$app->post("/cadastrex", function () use($view) {
-    $view->render("teste", [
-        "input" => Request::post("nome")
-    ]);
-});
+$app->get("/teste", [UserController::class, "register"], ["middleware" => "auth"]);
+
 
 $app->addNotFooundHandler(function () use ($view) {
-    $view->render("404", [
-        "erro" => "Erro fatal"
-    ]);
+    $view->render("404");
 });
-
 
 $app->run();

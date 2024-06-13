@@ -7,13 +7,15 @@ namespace App\Providers;
 use Closure;
 
 use App\Interfaces\MiddlewareProviderInterface;
+use App\Helpers\View;
 
-class RouteServiceProvider
+class RouteServiceProvider extends View
 {
     private $path;
     private $handlers;
     private $middleware;
     private $notFoundHandler = [];
+    private $notFoundParameters = [];
     //methods
     private const POST = 'POST';
     private const GET = 'GET';
@@ -23,10 +25,11 @@ class RouteServiceProvider
 
     public function __construct(MiddlewareProviderInterface $middleware)
     {
+
         $this->middleware = $middleware;
     }
 
-    function addHandler(string $method, string $path, closure|array $handler = null, closure $middleware = null)
+    function addHandler(string $method, string $path, closure|array $handler = null, $middleware = null)
     {
         $this->handlers[$method . $path] = [
             'method' => $method,
@@ -36,21 +39,21 @@ class RouteServiceProvider
         ];
     }
 
-    public function get(string $path, closure|array $handler, closure $middleware = null)
+    public function get(string $path, closure|array $handler, $middleware = null)
     {
         $this->path = $path;
 
         $this->addHandler(self::GET, $path, $handler, $middleware);
     }
 
-    public function post(string $path, closure|array $handler, closure $middleware = null)
+    public function post(string $path, closure|array $handler, $middleware = null)
     {
         $this->path = $path;
 
         $this->addHandler(self::POST, $path, $handler, $middleware);
     }
 
-    public function delete(string $path, closure|array $handler, closure $middleware = null)
+    public function delete(string $path, closure|array $handler, $middleware = null)
     {
         $this->path = $path;
 
@@ -58,7 +61,7 @@ class RouteServiceProvider
 
     }
 
-    public function put(string $path, closure|array $handler, closure $middleware = null)
+    public function put(string $path, closure|array $handler, $middleware = null)
     {
         $this->path = $path;
 
@@ -68,10 +71,15 @@ class RouteServiceProvider
 
     public function addNotFooundHandler(closure $handler): void
     {
+        $reflection = new \ReflectionFunction($handler);
+        $parameters = $reflection->getParameters();
+
+        $this->notFoundParameters = $parameters;
+
         $this->notFoundHandler = $handler;
     }
 
-    public function middleware(closure $middleware)
+    public function handleMiddleware(closure $middleware)
     {
         $this->middleware = $middleware;
     }
@@ -86,14 +94,20 @@ class RouteServiceProvider
             $params = [];
 
             foreach ($this->handlers as $handler) {
-
-                // Correct the regular expression
                 $pattern = preg_replace('/\:([^\/]+)/', '(?P<$1>[^/]+)', $handler['path']);
                 $pattern = '#^' . $pattern . '$#';
 
-                if (preg_match($pattern, $url['path'], $matches)) {
+                /**
+                 * Case has some middleware
+                 */
 
-                    $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY); // Only keep named subpattern matches
+
+                if (preg_match($pattern, $url['path'], $matches) && $handler["middleware"]) {
+                    $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+
+                    $middleware = $this->middleware->getMiddleware($handler['middleware']['middleware']);
+
+                    $middlewareClass = new $middleware();
 
                     if (is_array($handler['handler'])) {
                         $class = new $handler['handler'][0];
@@ -104,62 +118,46 @@ class RouteServiceProvider
                     if (is_callable($handler['handler'])) {
                         $callback = $handler["handler"];
                     }
-                    
-                    call_user_func_array($callback, $params);
+
+                    call_user_func_array([$middlewareClass, "handle"], [$handler['handler'], $params]);
 
                     return;
 
                 }
 
-                if ($url['path'] === $handler['path'] && $handler['method'] === $_SERVER['REQUEST_METHOD'] && isset($handler['middleware'])) {
 
-                    $middleware = $this->middleware->getMiddleware($handler['middleware']["middleware"]);
-
-                    if (is_callable($handler['handler'])) {
-                        $middleware->handle($handler['handler']);
-                    }
-
-                    if (is_array($handler['handler'])) {
-                        $class = new $handler["handler"][0];
-                        $method = $handler["handler"][1];
-
-                        $middleware->handle([$class, $method]);
-                    }
-
-                    die();
-                }
-
-                if ($url['path'] === $handler['path'] && $handler['method'] === $_SERVER['REQUEST_METHOD']) {
-                    echo $handler['path'];
-
-                    $pattern = preg_replace('/\:([^\/]+)/', '(?P<$1>[^/]+)', $handler['path']);
-                    $pattern = '#^' . $pattern . '$#';
-
-                    print_r($pattern);
-
-                    if (is_callable($handler['handler'])) {
-                        $callback = $handler['handler'];
-                    }
+                if (preg_match($pattern, $url['path'], $matches)) {
+                    $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
                     if (is_array($handler['handler'])) {
                         $class = new $handler['handler'][0];
                         $method = $handler['handler'][1];
-
                         $callback = [$class, $method];
                     }
+
+                    if (is_callable($handler['handler'])) {
+                        $callback = $handler["handler"];
+                    }
+
+                    call_user_func_array($callback, [$params]);
+
+                    return;
+
                 }
+
             }
 
             if (!$callback) {
                 header("HTTP/1.0 404 Not Found");
+               
                 call_user_func($this->notFoundHandler);
+
                 die();
             }
 
-            call_user_func_array($callback, $params);
 
         } catch (\Exception $e) {
-            echo "Minhas Bolas";
+
         }
 
     }

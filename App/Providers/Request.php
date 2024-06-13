@@ -1,9 +1,22 @@
 <?php
 
 namespace App\Providers;
-
+use Closure;
 class Request
 {
+    public static function next($request, $params = null)
+    {
+        if (is_array($request)) {
+            $class = new $request[0];
+            $method = $request[1];
+
+            return call_user_func_array([$class, $method], [$params]);
+
+        }
+
+        return call_user_func_array($request, [$params]);
+    }
+
     public static function input(string $input): string
     {
         $requestBody = (array) json_decode(file_get_contents('php://input'));
@@ -42,7 +55,7 @@ class Request
         return $input;
     }
 
-    public function rawPost($input): string|null
+    public static function rawPost($input): string|null
     {
         if (!isset($_POST[$input])) {
             return null;
